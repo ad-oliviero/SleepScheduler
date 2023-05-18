@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'page.dart';
+import 'calculate.dart';
 
 void main() {
   runApp(const App());
@@ -15,10 +18,9 @@ class AppState extends State<App> {
   final PageController _pageController = PageController();
 
   final List<PageWidget> _pages = [
-    const PageWidget(
-        title: 'Calculate', child: Center(child: Text('Calculate'))),
-    const PageWidget(title: 'History', child: Center(child: Text('History'))),
-    const PageWidget(title: 'Settings', child: Center(child: Text('Settings'))),
+    const CalculatePage(),
+    const PageWidget(title: 'History'),
+    const PageWidget(title: 'Settings'),
   ];
 
   @override
@@ -32,6 +34,15 @@ class AppState extends State<App> {
     return MaterialApp(
       title: 'Sleep Scheduler',
       theme: ThemeData.dark(),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('it'),
+      ],
       home: Scaffold(
         appBar: AppBar(
           title: Text(_pages[_currentIndex].title),
@@ -74,17 +85,5 @@ class AppState extends State<App> {
         ),
       ),
     );
-  }
-}
-
-class PageWidget extends StatelessWidget {
-  const PageWidget({Key? key, required this.title, required this.child})
-      : super(key: key);
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return child;
   }
 }
