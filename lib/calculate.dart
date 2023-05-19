@@ -10,9 +10,10 @@ class CalculatePage extends StatefulWidget {
 }
 
 class CalculatePageState extends State<CalculatePage> {
-  TimeOfDay _selectedStartSleepTime = TimeOfDay.now();
-  late TimeOfDay _selectedWakeUpTime;
-  Duration _selectedSleepDurationTime = const Duration(hours: 7, minutes: 30);
+  TimeOfDay _startSleepTime = TimeOfDay.now();
+  late TimeOfDay _wakeUpTime;
+  Duration _sleepAmount = const Duration(hours: 7, minutes: 30);
+  Duration _cycleDuration = const Duration(minutes: 90);
 
   TimeOfDay _addTime(TimeOfDay time, Duration duration) {
     int newMinute = time.minute + duration.inMinutes - (duration.inHours * 60);
@@ -35,7 +36,7 @@ class CalculatePageState extends State<CalculatePage> {
   @override
   void initState() {
     super.initState();
-    _selectedWakeUpTime = _addTime(TimeOfDay.now(), _selectedSleepDurationTime);
+    _wakeUpTime = _addTime(TimeOfDay.now(), _sleepAmount);
   }
 
   @override
@@ -58,14 +59,13 @@ class CalculatePageState extends State<CalculatePage> {
                 initialTime: now,
               ).then((value) {
                 setState(() {
-                  _selectedStartSleepTime = value!;
-                  _selectedWakeUpTime = _addTime(
-                      _selectedStartSleepTime, _selectedSleepDurationTime);
+                  _startSleepTime = value!;
+                  _wakeUpTime = _addTime(_startSleepTime, _sleepAmount);
                 });
               });
             },
-            child: Text(
-                "Start sleeping at: ${_selectedStartSleepTime.format(context)}"),
+            child:
+                Text("Start sleeping at: ${_startSleepTime.format(context)}"),
           ),
           const SizedBox(height: 20),
           ElevatedButton(
@@ -78,17 +78,41 @@ class CalculatePageState extends State<CalculatePage> {
             onPressed: () {
               showTimePicker(
                 context: context,
-                initialTime: _addTime(now, _selectedSleepDurationTime),
+                initialTime: _addTime(now, _sleepAmount),
               ).then((value) {
                 setState(() {
-                  _selectedWakeUpTime = value!;
-                  _selectedStartSleepTime =
-                      _subtractTime(now, _selectedSleepDurationTime);
-                  _selectedSleepDurationTime = const Duration(hours: 7);
+                  _wakeUpTime = value!;
+                  _startSleepTime = _subtractTime(now, _sleepAmount);
+                  _sleepAmount = const Duration(hours: 7);
                 });
               });
             },
-            child: Text("Wake up at: ${_selectedWakeUpTime.format(context)}"),
+            child: Text("Wake up at: ${_wakeUpTime.format(context)}"),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              const Text("Sleep Amount: "),
+              Slider(
+                value: _sleepAmount.inHours.toDouble(),
+                min: 0,
+                max: 24,
+                divisions: 24 ~/ (_cycleDuration.inMinutes / 60),
+                onChanged: (double value) {
+                  setState(() {
+                    _sleepAmount = Duration(
+                      hours: value.toInt(),
+                      minutes: ((value % 1) * 60).toInt(),
+                    );
+                    _wakeUpTime = _addTime(_startSleepTime, _sleepAmount);
+                  });
+                },
+              ),
+              Center(
+                child: Text(
+                    "${_sleepAmount.inHours}:${(_sleepAmount.inMinutes - (_sleepAmount.inHours * 60)).toString().padLeft(2, '0')}"),
+              ),
+            ],
           ),
         ],
       ),
