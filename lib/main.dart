@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'page.dart';
 import 'calculate.dart';
 
 void main() {
@@ -17,10 +16,13 @@ class AppState extends State<App> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
 
-  final List<PageWidget> _pages = [
+  final List<Widget> _pages = [
     const CalculatePage(),
-    const PageWidget(title: 'History'),
-    const PageWidget(title: 'Settings'),
+    Container(),
+  ];
+  final List<String> _titles = [
+    "Calculate",
+    "Settings",
   ];
 
   @override
@@ -45,7 +47,7 @@ class AppState extends State<App> {
       ],
       home: Scaffold(
         appBar: AppBar(
-          title: Text(_pages[_currentIndex].title),
+          title: Text(_titles[_currentIndex]),
         ),
         body: PageView(
           controller: _pageController,
@@ -70,16 +72,12 @@ class AppState extends State<App> {
           },
           items: [
             BottomNavigationBarItem(
-              icon: const Icon(Icons.calculate),
-              label: _pages[0].title,
-            ),
-            BottomNavigationBarItem(
               icon: const Icon(Icons.history),
-              label: _pages[1].title,
+              label: _titles[0],
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.settings),
-              label: _pages[2].title,
+              label: _titles[1],
             ),
           ],
         ),
