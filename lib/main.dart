@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'calculate.dart';
+import 'sleepstart.dart';
+import 'wakeup.dart';
 
 void main() {
   runApp(const App());
@@ -13,74 +14,108 @@ class App extends StatefulWidget {
 }
 
 class AppState extends State<App> {
-  int _currentIndex = 0;
-  final PageController _pageController = PageController();
-
-  final List<Widget> _pages = [
-    const CalculatePage(),
-    Container(),
-  ];
-  final List<String> _titles = [
-    "Calculate",
-    "Settings",
-  ];
-
   @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    TimeOfDay now = TimeOfDay.now();
+    Duration cycleDuration = const Duration(minutes: 90);
+    Duration sleepAmount = Duration(minutes: cycleDuration.inMinutes * 6);
+    return MaterialApp(
+      title: 'Sleep Scheduler',
+      theme: ThemeData.dark(useMaterial3: true),
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Center(child: Text("Sleep Scheduler")),
+        ),
+        body: HomePage(
+          startSleepTime: now,
+          wakeUpTime: addTime(now, sleepAmount),
+          cycleDuration: cycleDuration,
+          sleepAmount: sleepAmount,
+        ),
+      ),
+    );
   }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage(
+      {Key? key,
+      required this.startSleepTime,
+      required this.wakeUpTime,
+      required this.cycleDuration,
+      required this.sleepAmount})
+      : super(key: key);
+  final TimeOfDay startSleepTime;
+  final TimeOfDay wakeUpTime;
+  final Duration cycleDuration;
+  final Duration sleepAmount;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sleep Scheduler',
-      theme: ThemeData.dark(),
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('it'),
-      ],
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text(_titles[_currentIndex]),
-        ),
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          children: _pages,
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-              _pageController.animateToPage(
-                index,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-            });
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.history),
-              label: _titles[0],
+    TimeOfDay now = TimeOfDay.now();
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings),
-              label: _titles[1],
+            onPressed: () {
+              showTimePicker(
+                context: context,
+                initialTime: now,
+              ).then((value) {
+                if (value != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SleepStartPage(
+                        sleepAmount: sleepAmount,
+                        startTime: value,
+                        cycleDuration: cycleDuration,
+                      ),
+                    ),
+                  );
+                }
+              });
+            },
+            child: Text("Start sleeping at: ${startSleepTime.format(context)}"),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-          ],
-        ),
+            onPressed: () {
+              showTimePicker(
+                context: context,
+                initialTime: addTime(now, sleepAmount),
+              ).then((value) {
+                if (value != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WakeUpPage(
+                        sleepAmount: sleepAmount,
+                        wakeUpTime: value,
+                        cycleDuration: cycleDuration,
+                      ),
+                    ),
+                  );
+                }
+              });
+            },
+            child: Text("Wake up at: ${wakeUpTime.format(context)}"),
+          ),
+        ],
       ),
     );
   }
