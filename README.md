@@ -1,2 +1,2 @@
-# sleep_scheduler
+# Sleep Scheduler
 Sleep schedule Calculator Android app
